@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AssessmentQuestion } from '../types';
 import { 
   CheckCircle, 
@@ -100,6 +100,13 @@ const Assessment: React.FC = () => {
   const [showResult, setShowResult] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+  // Auto-submit when assessment is finished
+  useEffect(() => {
+    if (showResult && submitStatus === 'idle' && !isSubmitting) {
+      handleSubmit();
+    }
+  }, [showResult]);
 
   const handleStart = (e: React.FormEvent) => {
     e.preventDefault();
@@ -204,6 +211,24 @@ const Assessment: React.FC = () => {
     { name: 'สอดคล้อง (Compliance)', value: complianceRate, color: '#2563eb' },
     { name: 'ความเสี่ยง (Gap)', value: 100 - complianceRate, color: '#e2e8f0' },
   ];
+
+  const getStepIcon = (index: number) => {
+    switch(index) {
+      case 0: return <UserCheck size={24} />;
+      case 1: return <ShieldCheck size={24} />;
+      case 2: return <Beaker size={24} />;
+      case 3: return <Stethoscope size={24} />;
+      case 4: return <AlertCircle size={24} />;
+      case 5: return <Droplet size={24} />;
+      case 6: return <UserCheck size={24} />;
+      case 7: return <ShieldCheck size={24} />;
+      case 8: return <Beaker size={24} />;
+      case 9: return <Stethoscope size={24} />;
+      case 10: return <AlertCircle size={24} />;
+      case 11: return <Droplet size={24} />;
+      default: return <CheckCircle size={24} />;
+    }
+  };
 
   // Pre-assessment Form
   if (currentStep === -1) {
@@ -314,27 +339,31 @@ const Assessment: React.FC = () => {
               </p>
             </div>
 
-            {submitStatus === 'idle' && (
-              <button 
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-              >
-                {isSubmitting ? "กำลังบันทึก..." : "ส่งข้อมูลไปยัง Google Sheets"}
-              </button>
-            )}
+            <div className="mt-4">
+              {isSubmitting && (
+                <div className="p-4 bg-blue-50 text-blue-700 rounded-2xl text-center font-bold flex items-center justify-center gap-2 animate-pulse">
+                  <RotateCcw className="animate-spin" size={20} /> กำลังบันทึกข้อมูลอัตโนมัติ...
+                </div>
+              )}
 
-            {submitStatus === 'success' && (
-              <div className="p-4 bg-green-100 text-green-700 rounded-2xl text-center font-bold flex items-center justify-center gap-2">
-                <CheckCircle size={20} /> บันทึกข้อมูลสำเร็จ
-              </div>
-            )}
+              {submitStatus === 'success' && (
+                <div className="p-4 bg-green-100 text-green-700 rounded-2xl text-center font-bold flex items-center justify-center gap-2">
+                  <CheckCircle size={20} /> บันทึกข้อมูลลง Google Sheet สำเร็จ
+                </div>
+              )}
 
-            {submitStatus === 'error' && (
-              <div className="p-4 bg-red-100 text-red-700 rounded-2xl text-center font-bold">
-                เกิดข้อผิดพลาดในการบันทึกข้อมูล
-              </div>
-            )}
+              {submitStatus === 'error' && (
+                <div className="p-4 bg-red-100 text-red-700 rounded-2xl text-center font-bold flex flex-col gap-2">
+                  <span>เกิดข้อผิดพลาดในการบันทึกข้อมูล</span>
+                  <button 
+                    onClick={handleSubmit}
+                    className="text-xs underline font-normal"
+                  >
+                    ลองใหม่อีกครั้ง
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -360,24 +389,6 @@ const Assessment: React.FC = () => {
   }
 
   const question = COMPLIANCE_QUESTIONS[currentStep];
-
-  const getStepIcon = (index: number) => {
-    switch(index) {
-      case 0: return <UserCheck size={24} />;
-      case 1: return <ShieldCheck size={24} />;
-      case 2: return <Beaker size={24} />;
-      case 3: return <Stethoscope size={24} />;
-      case 4: return <AlertCircle size={24} />;
-      case 5: return <Droplet size={24} />;
-      case 6: return <UserCheck size={24} />;
-      case 7: return <ShieldCheck size={24} />;
-      case 8: return <Beaker size={24} />;
-      case 9: return <Stethoscope size={24} />;
-      case 10: return <AlertCircle size={24} />;
-      case 11: return <Droplet size={24} />;
-      default: return <CheckCircle size={24} />;
-    }
-  };
 
   return (
     <div className="max-w-3xl mx-auto py-6">
